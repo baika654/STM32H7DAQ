@@ -154,6 +154,11 @@ uint8_t CommandInterpreter(uint8_t* data, uint16_t dataLength, ADC_HandleTypeDef
 			DigitalIOSetPWM(channel, frequency, dutyCycle, outputEn);
 			break;
 		}
+		case OPCODE_SET_ANALOG_IN_A_SAMPLING_FREQ: {
+			uint8_t acqFreq = data[COMMAND_PAYLOAD_OFFSET+0];
+			SetTimer1(acqFreq);
+			break;
+		}
 		default:
 			return 1;
 			break;

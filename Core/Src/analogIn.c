@@ -15,6 +15,10 @@ uint8_t analogInBChSeqIndex;
 uint8_t analogInBCHSequencer[ANALOG_IN_SEQUENCER_LENGTH];
 uint8_t channelBitFlags = 0;
 
+uint16_t preScalerIndex[8] = {8-1,8-1,8-1,4-1,4-1,4-1,4-1,2-1};
+uint16_t counterPeriodIndex[8] = {8000-1, 4000-1, 1600-1, 1600-1, 800-1, 320-1, 160-1, 160-1};
+
+
 
 /**
   * @brief	This function initializes the Analog IN Channels:
@@ -450,4 +454,19 @@ void AnalogInHandler(uint8_t anBlock) {
 
 		GPIOWrite(GPIO_IO_GPIO1, 0);
 	}*/
+
 }
+
+void SetTimer1(uint8_t index) {
+	uint16_t timer1PreScaler = preScalerIndex[index];
+	uint16_t timer1CounterPeriod = counterPeriodIndex[index];
+	TIM1->CR1 &= ~TIM_CR1_CEN; // Clear the counter enable bit
+	TIM1->ARR = timer1CounterPeriod; // Set the new Auto-Reload Register (ARR) value
+	TIM1->PSC = timer1PreScaler;
+	TIM1->EGR |= TIM_EGR_UG; // Set the Update Generation (UG) bit to reload the prescaler and counter with the new values immediately
+	TIM1->SR &= ~TIM_SR_UIF; // Clear the update interrupt flag if necessary
+	TIM1->CR1 |= TIM_CR1_CEN; // Start the timer. Set the counter enable bit
+}
+
+
+

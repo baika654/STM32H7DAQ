@@ -20,6 +20,7 @@
 #define OPCODE_SET_ANALOG_IN_B_CH				0x16	//Configure Analog In Block B Channel
 #define OPCODE_SET_ANALOG_OUT_A_CH				0x17	//Configure Analog Out Block A Channel
 #define OPCODE_SET_ANALOG_OUT_B_CH				0x18	//Configure Analog Out Block B Channel
+#define OPCODE_SET_ANALOG_IN_A_SAMPLING_FREQ	0x19    //Set acquisition frequency
 
 #define OPCODE_SET_DIGITAL_OUT_IO				0x21	//Configure Digital Out IO
 #define OPCODE_SET_DIGITAL_OUT_PWM				0x25	//Configure Digital Out TIM1 Channels
