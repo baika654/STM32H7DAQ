@@ -39,7 +39,7 @@ extern "C" {
 #define ANALOG_OUT_BLOCK_A						0x01
 #define ANALOG_OUT_BLOCK_B						0x02
 
-#define ANALOG_OUT_BUFFER_SIZE					512
+#define ANALOG_OUT_BUFFER_SIZE					2048
 
 typedef enum {
 	Mode_None,

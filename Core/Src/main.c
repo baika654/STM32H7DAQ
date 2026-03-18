@@ -44,6 +44,8 @@
 /* USER CODE BEGIN PTD */
 /*__attribute__((section(".ram2")))  DMA_BUFFER*/volatile AnalogOutCHStruct analogOutAChannels[2];
 /*__attribute__((section(".ram2")))  DMA_BUFFER*/volatile AnalogOutCHStruct analogOutBChannels[2];
+extern AnalogInCHStruct analogInAChannels[8];
+extern AnalogInCHStruct analogInBChannels[8];
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -112,6 +114,7 @@ static void ADC_Calibrate(ADC_HandleTypeDef* hadc);
 /* USER CODE BEGIN 0 */
 
 
+/*
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	if (sampleCounter >= 1000) {
@@ -125,7 +128,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	//HAL_ADC_Stop_IT(&hadc1);
 	//printf("Done");
 
-}
+} */
 
 void HAL_DAC_ErrorCallbackCh1(DAC_HandleTypeDef *hdac)
 {
@@ -327,12 +330,12 @@ int main(void)
   	HAL_TIM_Base_Start(&htim1);
   	HAL_TIM_Base_Start(&htim2);
   	HAL_TIM_Base_Start(&htim4);
-  	//HAL_ADC_Start_DMA(&hadc1, (uint32_t*)ADC_VAL, 4);
-  	//HAL_ADC_Start_IT(&hadc1);
+  	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)analogInAChannels[0].buffer, ANALOG_OUT_BUFFER_SIZE);
+  	HAL_ADC_Start_IT(&hadc1);
   	HAL_OPAMP_Start(&hopamp2);
 
-  	HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
-  	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1000);
+  	//HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
+  	//HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1000);
 
   	//ADC_Calibrate(&hadc1);
   	//Init Analog Channels
@@ -344,9 +347,9 @@ int main(void)
   	//DigitalIOInit();
 
   	uint8_t isVCPConnected = 0;
-  	uint8_t txUSBData[1024];
+  	uint8_t txUSBData[2060];
   	uint16_t rxLength;
-  	uint8_t rxUSBData[1024];
+  	uint8_t rxUSBData[2060];
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -388,7 +391,7 @@ int main(void)
 	  			uint16_t txUSBDataIndex = 0;
 	  			uint8_t channel = 1;
 	  			for(channel = 1; channel < 9; channel++) {
-	  				uint16_t dataLength = AnalogInGetData(ANALOG_IN_BLOCK_A, channel, &txUSBData[txUSBDataIndex + 4]);
+	  				uint16_t dataLength = AnalogInGetData(ANALOG_IN_BLOCK_A, channel, &txUSBData[txUSBDataIndex + 4], hadc1);
 	  				if(dataLength != 0x00) {
 	  					txUSBData[txUSBDataIndex++] = OPCODE_TX_ANALOG_IN_A;	//Set Opcode
 
@@ -415,7 +418,7 @@ int main(void)
 	  					}
 	  				}
 
-	  				dataLength = AnalogInGetData(ANALOG_IN_BLOCK_B, channel, &txUSBData[txUSBDataIndex + 4]);
+	  				dataLength = AnalogInGetData(ANALOG_IN_BLOCK_B, channel, &txUSBData[txUSBDataIndex + 4], hadc1);
 	  				if(dataLength != 0x00) {
 	  					txUSBData[txUSBDataIndex++] = OPCODE_TX_ANALOG_IN_B;	//Set Opcode
 

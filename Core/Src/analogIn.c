@@ -5,9 +5,10 @@
 extern uint16_t ADC_VAL[4];
 
 AnalogInStruct analogInA;
-volatile AnalogInCHStruct analogInAChannels[8];
 AnalogInStruct analogInB;
+volatile AnalogInCHStruct analogInAChannels[8];
 volatile AnalogInCHStruct analogInBChannels[8];
+
 
 uint8_t analogInAChSeqIndex;
 uint8_t analogInACHSequencer[ANALOG_IN_SEQUENCER_LENGTH];
@@ -272,21 +273,27 @@ void AnalogInStopAll() {
   * @param	data: data array to be filled with the buffer data
   * @return	Length of the buffer
   */
-uint16_t AnalogInGetData(uint8_t anBlock, uint8_t channel, uint8_t* data) {
+uint16_t AnalogInGetData(uint8_t anBlock, uint8_t channel, uint8_t* data, ADC_HandleTypeDef hadc1) {
 	uint16_t length = 0;
+	int16_t lenAux = 0;
 	if(anBlock == ANALOG_IN_BLOCK_A) {
-		int16_t lenAux = analogInAChannels[channel - 1].bufferWriteIndex - analogInAChannels[channel - 1].bufferReadIndex;
-
+		if (channel==1) {
+			lenAux = (ANALOG_OUT_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(hadc1.DMA_Handle)) - analogInAChannels[channel - 1].bufferReadIndex;
+		} else {
+			lenAux = analogInAChannels[channel - 1].bufferWriteIndex - analogInAChannels[channel - 1].bufferReadIndex;
+		}
 		if(lenAux < 0) {
-			lenAux += 512;
+			lenAux += 2048;
 		}
 		length = lenAux;
 
+		// Possibly DMA this part.
 		uint16_t i;
-		for(i = 0; i < length; i++) {
-			data[i] = analogInAChannels[channel - 1].buffer[analogInAChannels[channel - 1].bufferReadIndex++];
+		for(i = 0; i < (length*2); i += 2) {
+			data[i] = (analogInAChannels[channel - 1].buffer[analogInAChannels[channel - 1].bufferReadIndex] >> 8);
+			data[i+1] = analogInAChannels[channel - 1].buffer[analogInAChannels[channel - 1].bufferReadIndex++];
 
-			if(analogInAChannels[channel - 1].bufferReadIndex >= 512) {
+			if(analogInAChannels[channel - 1].bufferReadIndex >= 2048) {
 				analogInAChannels[channel - 1].bufferReadIndex = 0;
 			}
 		}
@@ -308,7 +315,7 @@ uint16_t AnalogInGetData(uint8_t anBlock, uint8_t channel, uint8_t* data) {
 			}
 		}
 	}
-	return length;
+	return length*2;
 }
 
 /**
@@ -317,6 +324,8 @@ uint16_t AnalogInGetData(uint8_t anBlock, uint8_t channel, uint8_t* data) {
   * @return	None
   */
 AnalogInMode prevMode = Mode_Off;
+
+
 void AnalogInHandler(uint8_t anBlock) {
 	if(anBlock == ANALOG_IN_BLOCK_A) {
 		//GPIOWrite(GPIO_IO_GPIO0, 1);

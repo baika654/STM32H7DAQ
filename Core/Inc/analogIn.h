@@ -14,6 +14,8 @@
 
 #include "ada4254.h"
 
+#define ANALOG_OUT_BUFFER_SIZE					2048
+
 typedef enum {
 	Mode_Off,
 	Mode_Differential,
@@ -73,7 +75,7 @@ typedef struct {
 typedef struct {
 	uint8_t channel;
 	AnalogInCHConfigStruct config;
-	uint8_t buffer[512];
+	uint16_t buffer[ANALOG_OUT_BUFFER_SIZE];
 	uint16_t bufferReadIndex;
 	uint16_t bufferWriteIndex;
 } AnalogInCHStruct;
@@ -84,7 +86,7 @@ void AnalogInCalibration(uint8_t anBlock);
 void AnalogInConfig(uint8_t anBlock, AnalogInConfigStruct config);
 void AnalogInConfigChannel(uint8_t anBlock, uint8_t channel, AnalogInCHConfigStruct config, ADC_HandleTypeDef *hadc, TIM_HandleTypeDef *htim);
 void AnalogInStopAll();
-uint16_t AnalogInGetData(uint8_t anBlock, uint8_t channel, uint8_t* data);
+uint16_t AnalogInGetData(uint8_t anBlock, uint8_t channel, uint8_t* data, ADC_HandleTypeDef hadc1);
 void AnalogInHandler(uint8_t anBlock);
 void SetTimer1(uint8_t index);
 
